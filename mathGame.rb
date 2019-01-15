@@ -1,32 +1,119 @@
-require_relative './turn_manager'
+require './players.rb'
+require './questions.rb'
+
 
 class Game
   def initialize
+    puts 'Welcome to Math Game'
+    sleep (1)
+    puts 'Please enter your name, Player 1:'
+    name1 = gets.chomp
+    @player1 = Players.new(gets.chomp)
+    puts 'Please enter your name, Player 2:'
+    name2 = gets.chomp
+    @player2 = Players.new(gets.chomp)
+    sleep(1)
+    puts "#{@player1.name} and #{@player2.name}"
+    puts "Let the game begins..."
+  end
 
-    # list of players
-    @players = [
-      Player.new('Player_1'),
-      Player.new('Player_2'),
-      Player.new('Player_3'),
-      Player.new('Player_4')
-    ]
+  def question
+    question = Question.new
+    @query = question.question
+    @ans = question.answer
+    sleep(1)
+    puts '-----NEW QUESTION-----'
+    if @player1.turn
+      sleep(1)
+      puts "   - #{@player1.name} -   "
+      puts "#{@query}"
+    else
+      sleep(1)
+      puts "   - #{@player2.name} -   "
+      puts "#{@query}"
+    end
+  end
 
-    # The turn manager manages which round it is as well as
-    # which player is playing and against who
-    @turn_manager = TurnManager.new(@players)
 
+# check answer
+  def check_answer
+    if STDIN.gets.chomp.to_i == @ans
+      if @player1.turn
+        @player1.life += 1
+        puts 'You are correct!'
+        @player1.turn = false
+        @player2.turn = true
+        life
+        win?
+      else
+        @player2.life += 1
+        puts 'You are correct!'
+        @player1.turn = true
+        @player2.turn = false
+        life
+        win?
+      end
+    else
+      if @player1.turn
+        puts "#{@player1.name}: WRONG!"
+        @player1.turn = false
+        @player2.turn = true
+        sleep(1)
+        puts "The correct answer was #{@ans}."
+        life
+        win?
+      else
+        puts "#{@player2.name}: WRONG!"
+        @player1.turn = true
+        @player2.turn = false
+        sleep(1)
+        puts "The correct answer was #{@ans}."
+        life
+        win?
+      end
+    end
+  end
+
+
+# What is the life
+  def life
+    sleep(1)
+    puts " Current score: "
+    puts "#{@player1.name}: #{@player1.life.to_s}/3 -- #{@player2.name}: #{player2.life.to_s}/3"
+  end
+
+
+# Who's turn is it
+  def turn
+    question
+    check_answer
+  end
+
+
+# Is the game over yet
+ def game_over
+  @life <= 0
+ end
+
+
+# Who is the winner?
+def win?
+  if @player1.life == 3
+    sleep(1)
+    puts ' - GAME OVER - '
+    sleep(1)
+    puts "#{@player1.name} wins!"
+    sleep(1)
+    puts "THANK YOU, PLAY AGAIN!"
+
+  elsif @player2.life == 3
+    puts ' - GAME OVER - '
+    sleep(1)
+    puts "#{@player1.name} wins!"
+    sleep(1)
+    puts "THANK YOU, PLAY AGAIN!"
+  else
+    turn
+  end
 end
-
-
-def play
-  while (not game_over?) do
-    #get the next turn from the turn manager
-    turn = @turn_manager.next_turn
-
-    #print out a round header
-    puts ""
-    puts "==== ROUND ##{turn.round} ====="
-    puts ""
-
-    #if a player is dead, print a message and move on
-    if turn.player
+end
